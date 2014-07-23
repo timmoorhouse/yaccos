@@ -76,7 +76,9 @@ function event.pull(filter, timeout_id)
         end
 
         ev = { os.pullEventRaw() }
-        --os.log("event.pull "..ev[1])
+        if os.log then
+        	os.log("event.pull "..ev[1])
+        end
 
         -- Usually handled by os.pullEvent(), but we'll likely replace it
         -- TODO: leave this for os.pullEvent()???
