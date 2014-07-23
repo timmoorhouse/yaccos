@@ -50,6 +50,8 @@ end
 function HandlerList.fire(self, ev, ...)
 	local args = {...}
     local hl = self._handlers[ev]
+    if os.log and hl then
+    	os.log("hl.fire ev="..tostring(ev).." size="..tostring(hl:size()))
 	if hl then
 		hl:remove_if(function(h)
 		             	return not h:fire(ev, unpack(args))
