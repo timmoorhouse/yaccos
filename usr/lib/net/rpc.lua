@@ -70,7 +70,7 @@ local function onMessage(protocol, src, msg)
 				r = { f(unpack(m.args)) }
 			end
 			_rpcinfo:pop_back()
-			--log.debug("rpc call done src="..tostring(src).." id="..tostring(m.id))
+			log.debug("rpc call done src="..tostring(src).." id="..tostring(m.id))
 			net.send(src, { id=m.id, result=r }, protocol)
 		else
 			net.syslog.log("No handler for rpc call "..m.f)
