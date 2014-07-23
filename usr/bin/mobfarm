@@ -1,0 +1,31 @@
+-- -*- lua -*-
+
+local oo = require("oo")
+local bt = require("bt")
+local nt = require("nt")
+
+local Farm = oo.class("Farm", bt.Agent)
+
+function Farm.new(size, self, klass)
+    self = self or {}
+    Farm.super.new({}, self, klass or Farm)
+
+    self:add(
+	    bt.Retry.new(
+            bt.All.new({
+                bt.Attack.new(nt.direction.forward),
+                bt.Sleep.new(1),
+                bt.Condition.new(function(pad) return false end)
+            })
+	    )
+    )
+
+    return self
+end
+
+nt.debug(true)
+local f = Farm.new()
+
+print("Starting ...")
+f:run()
+print("Done farming")

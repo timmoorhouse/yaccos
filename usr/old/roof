@@ -1,0 +1,449 @@
+-- -*- lua -*-
+
+if shell == nil then
+    function rs.testBundledInput(side, color)
+        if side == r.arm.side then
+            return ((color == r.arm.is_on_arm) or
+                    (color == r.arm.is_out) or
+                    (color == r.arm.is_up))
+        elseif side == r.roof.side then
+            return ((color == r.roof.is_closed) or
+                    (color == r.roof.is_locked))
+        end
+        return false
+    end
+end
+
+-- ***************************************************************************
+
+local RoofGoal = oo.class("RoofGoal", agent.Goal)
+
+function RoofGoal.new(op, self, klass)
+    self = self or {}
+    RoofGoal.super.new(self, klass or RoofGoal)
+    self.op = op
+    return self
+end
+
+function RoofGoal.onActivate(self)
+    self:agent():do_alarm("moving")
+end
+
+function RoofGoal.onDeactive(self)
+    self:agent():do_alarm(nil)
+end
+
+function RoofGoal.step(self)
+
+    local a = self:agent()
+
+    local opening = (self.op == "open")
+    local closing = (self.op == "close")
+ 
+    -- Check for some error cases
+    
+    if not a:is_out() and not a:is_down() then
+        a:do_alarm("arm in invalid state")
+        return false
+    end
+    
+    if a:is_locked() and not a:is_closed() then
+        a:do_alarm("roof in invalid state")
+        return false
+    end
+    
+    if not a:is_closed() and a:is_up() then
+        a:do_alarm("arm up when roof not closed")
+        return false
+    end
+ 
+    if a:is_locked() and (opening or not a:is_closed()) then   
+        -- Unlock roof
+        a:release(true)
+        return true
+    end
+ 
+    if closing and not a:is_closed() then
+        -- Move roof to closed position
+        a:motor()
+        return true
+    end
+ 
+    if closing and a:is_closed() and not a:is_locked() then
+        -- Lock roof after closing      
+        a:lock()
+        return true
+    end
+      
+    if ((not a:is_down() or not a:is_in()) and
+        ((opening and a:is_on_arm()) or
+         (closing and not a:is_on_arm()))) then      
+        -- Retract arm        
+        if not a:is_down() then
+            a:lower()
+        elseif not a:is_in() then
+            a:retract()
+        end
+        return true
+    end
+ 
+    if closing and a:is_on_arm() and a:is_out() and a:is_up() then
+        
+        -- Leave middle of roof in place
+  
+        -- Must be done atomically since we have no way of knowing
+        -- whether the roof section is actually joined or
+        -- separated but the arm happens to be touching
+  
+        a:enabled("lock")
+        a:separate()
+        a:lower()
+        a:enabled("unlock")
+        return true
+    end
+ 
+    if ((not a:is_out() or not a:is_up()) and
+        ((opening and not a:is_on_arm()) or
+         (closing and a:is_on_arm()))) then 
+       
+       -- Extend arm
+ 
+       -- As for separating case, need to do the join atomically
+       -- with the last step of the extend
+
+        if not a:is_out() then
+            a:extend()
+        elseif not a:is_up() then
+            a:enabled("lock")
+            a:raise()
+        end
+        if opening and a:is_out() and a:is_up() then
+            a:join()
+        end
+        a:enabled("unlock")
+      
+        return true
+    end
+
+    if opening and not a:is_open() then
+        -- Move roof to open position
+        a:motor()
+        return true
+    end
+
+    -- Hmm ... shouldn't get this far if complete() has been checked
+    return false
+end
+
+-- ***************************************************************************
+
+Open = oo.class("Open", RoofGoal)
+
+function Open.new(self, klass)
+    self = self or {}
+    Open.super.new("open", self, klass or Open)
+    return self
+end
+
+function Open.complete(self)
+    return self:agent():is_fully_open()
+end
+
+-- ***************************************************************************
+
+Close = oo.class("Close", RoofGoal)
+
+function Close.new(self, klass)
+    self = self or {}
+    Close.super.new("close", self, klass or Close)
+    return self
+end
+
+function Close.complete(self)
+    return self:agent():is_fully_closed()
+end
+
+-- ***************************************************************************
+
+Roof = oo.class("Roof", agent.Agent)
+
+function Roof.new(self, klass)
+    self = self or {}
+    Roof.super.new(self, klass or Roof)
+    return self
+end
+
+Roof.alarm = {
+    --side = "front",
+    side = "top",
+    on   = false,
+}
+
+Roof.enable = {
+    name = "enable",
+    side = "front",
+    type = "redstone",
+}
+
+Roof.arm = {
+    name      = "arm",
+    side      = "back",
+    type      = "bundled",
+    delay     = 4, -- TBD
+    is_up     = colors.black,
+    is_down   = colors.red,
+    is_in     = colors.green,
+    is_out    = colors.brown,
+    is_on_arm = colors.cyan,
+    alarm     = colors.gray,
+    lower     = colors.magenta,
+    raise     = colors.lightBlue,
+    extend    = colors.orange,
+    retract   = colors.white,
+    separate  = colors.yellow,
+    join      = colors.lime,
+}
+
+Roof.roof = {
+    name      = "roof",
+    side      = "bottom",
+    type      = "bundled",
+    delay     = 4, -- TBD
+    is_closed = colors.white,
+    is_open   = colors.orange,
+    motor     = colors.magenta,
+    alarm     = 0, -- TBD
+    is_locked = colors.lime,
+    lock      = colors.lightBlue,
+    release   = colors.yellow,
+}
+
+function Roof.test(self, what, op)
+    if what.type == "redstone" then
+       
+        -- Value can be locked to the current value until unlocked,
+        -- allowing for atomic operations (test() will return the
+        -- same value on each call until unlocked)
+        
+        local r = rs.getInput(what.side)
+        if what.locked then
+            r = what.value
+        end
+        if op == "lock" then
+            print("locking "..what.name.." to ",r)
+            what.value = r
+            what.locked = true
+        elseif op == "unlock" then
+            what.locked = false
+        end
+        return r
+    else
+        return rs.testBundledInput(what.side, what[op])
+    end
+end
+
+function Roof.enabled(self, ...)
+    return self:test(self.enable, ...)
+end
+
+function Roof.is_up(self)
+    return self:test(self.arm, "is_up")
+end
+
+function Roof.is_down(self)
+    return self:test(self.arm, "is_down")
+end
+
+function Roof.is_in(self)
+    return self:test(self.arm, "is_in")
+end
+
+function Roof.is_out(self)
+    return self:test(self.arm, "is_out")
+end
+
+function Roof.is_on_arm(self)
+    return self:test(self.arm, "is_on_arm")
+end
+
+function Roof.is_closed(self)
+   return self:test(self.roof, "is_closed")
+end
+
+function Roof.is_fully_closed(self)
+    return (self:is_closed() and
+            self:is_down() and
+            self:is_in() and
+            not self:is_on_arm() and
+            self:is_locked())
+end
+
+function Roof.is_fully_open(self)
+   return (self:is_open() and
+           self:is_down() and
+           self:is_in() and
+           self:is_on_arm())
+end
+
+function Roof.is_open(self)
+    return self:test(self.roof, "is_open")
+end
+
+function Roof.is_locked(self)
+    return self:test(self.roof, "is_locked")
+end
+
+function Roof.do_alarm(self, msg)
+    local enable = (msg ~= nil) and (msg ~= false)
+    self.alarm.on = enable
+    self:op(self.arm, nil)
+    if enable then
+        print("*** ALARM *** ", msg)
+        --self:wait(self.arm)
+    end
+end
+
+function Roof.op(self, what, op)
+    if what.type == "redstone" then
+        rs.setOutput(what.side, op)
+    else
+        local opn = 0
+        if op ~= nil then
+            opn = what[op]
+        end
+        print(what.name .. " " .. (op or "noop"))
+        if self:enabled() then
+            if opn > 0 then
+                self:do_alarm(op)
+            end
+            if not self.alarm.on then
+                opn = opn + what.alarm
+            end
+            rs.setBundledOutput(what.side, opn)
+        end
+        if opn > 0 then
+            self:wait(what)
+        end
+    end
+end
+
+function Roof.wait(self, what)
+    if self:enabled() then
+        os.sleep(0.5)
+        self:op(what, nil)
+        if what.delay then
+            os.sleep(what.delay)
+        end
+    else
+        os.sleep(1)
+    end
+end
+
+function Roof.lower(self)
+    self:op(self.arm, "lower")
+end
+
+function Roof.raise(self)
+    self:op(self.arm, "raise")
+end
+
+function Roof.extend(self)
+    self:op(self.arm, "extend")
+end
+
+function Roof.retract(self)
+    self:op(self.arm, "retract")
+end
+
+function Roof.separate(self)
+    self:op(self.arm, "separate")
+end
+
+function Roof.join(self)
+    self:op(self.arm, "join")
+end
+
+function Roof.motor(self)
+    self:op(self.roof, "motor")
+end
+
+function Roof.lock(self)
+    self:op(self.roof, "lock")
+end
+   
+function Roof.release(self)
+    self:op(self.roof, "release")
+end
+
+function Roof.state(self)
+    local s = {}
+
+    if self:is_fully_open() then
+        s.fully_open = true
+    end
+    if self:is_fully_closed() then
+        s.fully_closed = true
+    end
+
+    local arm = {}
+    if self:is_up() then
+        table.insert(arm, "up")
+    end
+    if self:is_down() then
+        table.insert(arm, "down")
+    end
+    if self:is_in() then
+        table.insert(arm, "in")
+    end
+    if self:is_out() then
+        table.insert(arm, "out")
+    end
+    s.arm = table.concat(arm, ", ")
+
+    if self:is_on_arm() then
+        s.attached = true
+    end
+
+    local roof = {}
+    if self:is_closed() then
+        table.insert(roof, "closed")
+    end
+    if self:is_open() then
+        table.insert(roof, "open")
+    end
+    if self:is_locked() then
+        table.insert(roof, "locked")
+    end
+    s.roof = table.concat(roof, ", ")
+
+    return s
+end
+
+function Roof.open(self)
+    self:addGoal(Open.new())
+    self:run()
+end
+
+function Roof.close(self)
+    self:addGoal(Close.new())
+    self:run()
+end
+
+r = Roof.new()
+
+op,parms = ...
+if op then
+    if r[op] then
+        t = type(r[op])
+        if t == "function" then
+            print(op, r[op](r,...))
+        else
+            print(r[op])
+        end
+    else
+        error("unsupported operation "..op)
+    end
+else
+    r:ui(...)
+end
+

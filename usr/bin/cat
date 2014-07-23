@@ -1,0 +1,18 @@
+-- -*- lua -*-
+
+local args = {...}
+
+function cat(f)
+	for l in f:lines() do
+		io.write(l)
+		io.write("\n")
+	end
+end
+
+if #args > 0 then
+	for i,v in ipairs(args) do
+		cat(io.open(shell.resolve(v), "r"))
+	end
+else
+	cat(io.input())
+end

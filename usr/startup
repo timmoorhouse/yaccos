@@ -1,0 +1,130 @@
+-- -*- lua -*-
+
+local root = fs.getDir(fs.getDir(shell.getRunningProgram()))
+
+shell.setPath("usr/bin:"..shell.path())
+help.setPath("usr/help:"..help.path())
+--print(shell.path())
+
+os.loadAPI(fs.combine(root, "usr/lib/package"))
+
+print("root=["..root.."]") -- TODO
+if root ~= "." and root ~= "" then
+	shell.setPath(fs.combine(root, "usr/bin")..":"..shell.path())
+	package.path = fs.combine(root,"usr/lib/?.lua")..":"..package.path
+end
+
+function require(modname)
+	local sentinel = "LOADING"
+	if package.loaded[modname] == sentinel then
+		error("cycle in require graph", 2)
+	end
+	if not package.loaded[modname] then
+		package.loaded[modname] = sentinel
+		for k,f in pairs(package.searchers) do
+			local loader, arg = f(modname)
+			if loader then
+				local f, err = loader(arg)
+				if f then
+					package.loaded[modname] = f()
+				else
+					error(err, 2)
+				end
+				break
+			end
+		end
+	end
+	if package.loaded[modname] == sentinel then
+		package.loaded[modname] = nil
+		error("unable to load "..modname, 2)
+	elseif package.loaded[modname] then
+		return package.loaded[modname]
+	else
+		error("unable to load "..modname, 2)
+	end
+end
+_G.require = require
+
+function autoload(p, pn, ...)
+	if not p._autoload then
+		p._autoload = {}
+	end
+	for i,v in pairs({...}) do
+		p._autoload[v] = pn.."."..v
+	end
+	local mt = getmetatable(p)
+	if not mt then
+		mt = {}
+		setmetatable(p, mt)
+	end
+	local index = mt.__index
+	mt.__index =
+		function(t,k)
+			if t._autoload[k] then
+				return require(t._autoload[k])
+			elseif index then
+				return index(t, k)
+			end
+		end
+end
+_G.autoload = autoload
+
+-- we do our own handling of modem_message events, etc
+rednet.run = function()
+	while true do
+		-- block forever
+		os.pullEventRaw("xyzzy")
+	end
+end
+
+os.pullEvent = function(filter)
+	local event = require("event")
+	local ev = { event.pull(filter) }
+	if ev[1] == "terminate" then
+		error("Terminated", 0)
+	end
+	return unpack(ev)
+end
+
+local vfs = require("vfs")
+
+fs.list         = vfs.list
+fs.exists       = vfs.exists
+fs.isDir        = vfs.isDir
+fs.isReadOnly   = vfs.isReadOnly
+fs.getDrive     = vfs.getDrive
+fs.getSize      = vfs.getSize
+fs.getFreeSpace = vfs.getFreeSpace
+fs.makeDir      = vfs.makeDir
+fs.move         = vfs.move
+fs.copy         = vfs.copy
+fs.delete       = vfs.delete
+fs.open         = vfs.open
+
+-- TODO
+local net = require("net")
+local m = net.modem()
+if m then
+	net.open(m)
+end
+
+shell.run("routed", "start")
+shell.run("echod", "start")
+shell.run("telnetd", "start")
+--shell.run("dnsd", "start")
+
+local srcs = { "disk" }
+if net.modem() then
+	if os.getComputerLabel() ~= "srv" then
+		table.insert(srcs, "nfs:srv")
+		if os.getComputerLabel() ~= "pkt" then
+			table.insert(srcs, "nfs:pkt")
+		end
+	end
+end
+shell.run("update", unpack(srcs))
+
+-- TODO: move to startup.local
+--if os.getComputerLabel() == "srv" or os.getComputerLabel() == "pkt" then
+--	shell.run("nfsd", "start")
+--end

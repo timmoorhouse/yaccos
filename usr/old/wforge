@@ -1,0 +1,74 @@
+-- -*- lua -*-
+
+local cl = require("cl")
+
+local args = {...}
+local opt = cl.Options.new({
+        i = {
+       	    name    = "iron",
+       	    arg     = "number",
+       	    default = 15,
+       	    help    = "Slot with Iron",
+    	},
+    	d = {
+    		name    = "darkiron",
+    		arg     = "number",
+    		default = 16,
+    		help    = "Slot with Dark Iron",
+    	},
+    })
+opt:set(args)
+
+-- Iron block in 15
+-- Dark Iron block in 16
+
+local function selectStackable(what)
+	for i = 1,16 do
+		if i ~= opt:get("iron") and i ~= opt:get("darkiron") then
+		    if turtle.getItemCount(i) == 0 then
+				return i
+			end
+			if turtle.getItemSpace(i) > 0 then
+				turtle.select(i)
+				if turtle.compareTo(what) then
+					return i
+				end
+			end
+		end
+	end
+	return 0
+end
+
+local function select(what)
+	for i = 1,16 do
+		if i ~= opt:get("iron") and i ~= opt:get("darkiron") then
+			turtle.select(i)
+			if turtle.compareTo(what) then
+				return i
+			end
+		end
+	end
+	return 0
+end
+
+while true do
+	local slot
+
+	turtle.select(opt:get("darkiron"))
+	if turtle.compareUp() then
+		slot = selectStackable(opt:get("darkiron"))
+		if slot > 0 then
+			print("putting dark iron in "..tonumber(slot))
+			turtle.digUp()
+		end
+	end
+
+	slot = select(opt:get("iron"))
+	if slot > 0 then
+		print("placing iron from "..tonumber(slot))
+		turtle.placeUp()
+	end
+
+    sleep(5)
+end
+

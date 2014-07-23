@@ -1,0 +1,93 @@
+-- -*- lua -*-
+
+--[[
+	Somewhat like rsync except that it (so far) only handles local files
+	(mount a remote filesystem via NFS for now if you want remote support)
+]]
+
+local args = {...}
+
+-- Don't use cl.Options since this gets called from startup before cl is loaded
+local opt = { }
+while #args > 0 do
+	if args[1] == "--" then
+		break
+	elseif args[1] == "-f" then
+		opt.force = true
+	elseif args[1] == "-n" then
+		opt.dryrun = true
+	else
+		break
+	end
+	table.remove(args, 1)
+end
+
+if #args < 2 then
+	print("usage: sync <src>.. <dest>")
+	return
+end
+
+local function delete(f)
+	if fs.exists(f) then
+		if opt.dryrun then
+			print("rm "..f)
+		elseif opt.force then
+			fs.delete(f)
+		else
+			print(f.." already exists")
+		end
+	end
+end
+
+local function makeDir(dir)
+	if not fs.isDir(dir) then
+		if opt.dryrun then
+			print("mkdir "..dir)
+		else
+			delete(dir)
+			fs.makeDir(dir)
+		end
+	end
+end
+
+local function copy(src, dst)
+	if opt.dryrun then
+		print("cp "..src.." "..dst)
+	else
+		delete(dst)
+		fs.copy(src, dst)
+	end
+end
+
+local function sync(src, dst)
+	if not fs.exists(src) then
+		error(src.." not found")
+	end
+	--print("sync("..src..","..dst..")")
+	if fs.exists(dst) and fs.isDir(dst) then
+		dst = fs.combine(dst, fs.getName(src))
+	end
+	if fs.isDir(src) then
+		makeDir(dst)
+		local insrc = {}
+		for i,entry in ipairs(fs.list(src)) do
+			insrc[entry] = true
+			sync(fs.combine(src, entry), dst)
+		end
+		if fs.exists(dst) and opt.force then
+			for i,entry in ipairs(fs.list(dst)) do
+				if not insrc[entry] then
+					delete(fs.combine(dst, entry))
+				end
+			end
+		end
+	else
+		copy(src, dst)
+	end
+end
+
+local dst = shell.resolve(table.remove(args))
+for i,src in ipairs(args) do
+	sync(shell.resolve(src), dst)
+end
+

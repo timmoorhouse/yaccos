@@ -1,0 +1,74 @@
+-- -*- lua -*-
+
+--[[
+
+	Slightly improved copy command.
+
+	The key feature is the "-f" flag to force overwriting of existing files
+	(needed by startup to update an existing installation on boot).
+
+]]
+
+local args = {...}
+
+-- Don't use cl.Options since cp gets called from startup before cl is loaded
+local opt = { }
+while #args > 0 do
+	if args[1] == "--" then
+		break
+	elseif args[1] == "-f" then
+		opt.force = true
+	elseif args[1] == "-r" then
+		opt.recursive = true
+	elseif args[1] == "-n" then
+		opt.dryrun = true
+	else
+		break
+	end
+	table.remove(args, 1)
+end
+
+if #args < 2 then
+	print("Usage: cp <src>... <dst>")
+	return
+end
+
+local function cp(src, dst)
+	--print("cp("..src..","..dst..")")
+	if fs.exists(dst) and fs.isDir(dst) then
+		dst = fs.combine(dst, fs.getName(src))
+	end
+	if fs.exists(src) and fs.isDir(src) then
+		if fs.exists(dst) and not fs.isDir(dst) then
+			error(dst.." is not a directory")
+		end
+		if not fs.exists(dst) and not opt.dryrun then
+			fs.makeDir(dst)
+		end
+		if opt.recursive then
+			for i,entry in ipairs(fs.list(src)) do
+				cp(fs.combine(src, entry), dst)
+			end
+		else
+			error(src.." is a directory")
+		end
+	else
+		if opt.dryrun then
+			print("cp "..src.." "..dst)
+		else
+			if fs.exists(dst) then
+				if opt.force then
+					fs.delete(dst)
+				else
+					error(dst.." exists")
+				end
+			end
+			fs.copy(src, dst)
+		end
+	end
+end
+
+local dst = shell.resolve(table.remove(args))
+for i,src in ipairs(args) do
+	cp(shell.resolve(src), dst)
+end

@@ -1,0 +1,23 @@
+-- -*- lua -*-
+
+args = {...}
+opt = cl.Options.new({
+        q = {
+            name = "quiet",
+            help = "TBD",
+        },
+    })
+
+opt:set(args)
+
+if opt:get("help") then
+    opt:usage()
+    return
+end
+
+for i,a in ipairs(args) do
+    print("i=", i, " a=", a)
+end
+
+print("all args: "..table.concat(args, ", "))
+

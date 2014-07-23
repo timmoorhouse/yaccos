@@ -1,0 +1,41 @@
+
+- proxy class
+- streams? pipes? redirection?
+- improved help support?
+- use peripheral.getNames?
+- autorun dir
+- github repo
+- /etc
+
+net:
+- dhcp?
+
+libraries:
+- stdlib?
+- oo: operators
+- oo: multiple inheritance
+- persistent data
+- vfs: disk.getMountPath?
+- vfs: does fs.find work?
+- ui: needs much work
+- event: event class?
+- nt: replace turtle?
+
+filesystems:
+- github?
+- tmpfs?
+- etc/exports for nfsd?
+
+commands:
+- ps
+- kill
+- ls with -l
+- grep
+- host
+- can use cl in sync, cp now
+- installer on pastebin
+- web browser
+- telnet: multishell?
+- better help command?
+- more: keybindings
+

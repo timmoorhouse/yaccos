@@ -1,0 +1,146 @@
+-- -*- lua -*-
+
+local cl    = require("cl")
+local mdm   = require("mdm")
+local net   = require("net")
+local event = require("event")
+
+local args = {...}
+local opt = cl.Options.new({
+        c = {
+            name    = "channel",
+            arg     = "number",
+            default = nil,
+            help    = "Modem channel",
+        },
+        e = {
+            name    = "event",
+            arg     = "string",
+            default = nil,
+            help    = "Event"
+        },
+        p = {
+            name    = "protocol",
+            arg     = "string",
+            default = nil,
+            help    = "Net protocol",
+        },
+        r = {
+            name    = "rpc",
+            arg     = "string",
+            default = nil,
+            help    = "RPC protocol",
+        },
+        F = {
+            name = "foreground",
+            help = "Run in foreground",
+        },
+    })
+
+opt:set(args)
+
+if opt:get("help") then
+    opt:usage()
+    return
+end
+
+local win = term.current() -- TODO
+
+local function newline(win)
+    local x, y = win.getCursorPos()
+    if x > 1 then
+        local maxx, maxy = win.getSize()
+        if y == maxy then
+            win.scroll(1)
+            win.setCursorPos(1, y)
+        else
+            win.setCursorPos(1, y+1)
+        end
+    end
+end
+
+local function prefix(win)
+    win.setTextColour(colours.yellow)
+    win.write(string.format("%04d:%s ", os.day(), textutils.formatTime(os.time(), true)))
+end
+
+local function onEvent(win, ev, p1, p2, p3, p4, p5)
+    newline(win)
+    prefix(win)
+    win.setTextColour(colours.green)
+    win.write(string.format("%s(%s,%s,%s,%s,%s)", ev, p1, p2, p3, p4, p5))
+    return true
+end
+
+local function onModemMessage(win, sch, rch, msg, side, distance)
+    newline(win)
+    prefix(win)
+    win.setTextColour(colours.green)
+    win.write(string.format("%-4s ", msg:sender()))
+    win.setTextColour(colours.white)
+    win.write(textutils.serialize(msg:msg()))
+    return true
+end
+
+local function onRednetMessage(win, protocol, src, msg)
+    newline(win)
+    prefix(win)
+    win.setTextColour(colours.green)
+    win.write(string.format("%-4s ", msg:sender()))
+    win.setTextColour(colours.white)
+    win.write(textutils.serialize(msg:msg()))
+    return true
+end
+
+local function onRPC(opts, rpcprotocol, protocol, src, msg)
+    local win = opts.win
+    newline(win)
+    prefix(win)
+    win.setTextColour(colours.green)
+    win.write("RPC") -- TODO
+    return true
+end
+
+local l_channel = opt:get("channel")
+local l_net     = opt:get("protocol")
+local l_rpc     = opt:get("rpc")
+local l_event   = opt:get("event")
+
+if l_channel then
+    print("channel "..l_channel)
+    mdm.listen(l_channel, onModemMessage, win)
+end
+
+if l_net then
+    print("protocol "..l_net)
+    net.listen(l_net, onRednetMessage, win)
+end
+
+if l_rpc then
+    print("rpc protocol "..l_rpc)
+    net.listen(net.rpc.protocol, onRPC, win, l_rpc)
+end
+
+if l_event then
+    print("event "..l_event)
+    event.listen(l_event, onEvent, win)
+end
+
+--win.clear()
+if opt:get("foreground") then
+    event.loop()
+    if l_channel then
+        mdm.ignore(l_channel, onModemMessage)
+    end
+    if l_net then
+        net.ignore(l_net, onRednetMessage)
+    end
+    if l_rpc then
+        net.ignore(net.rpc.protocol, onRPC)
+    end
+    if l_event then
+        event.ignore(l_event, onEvent)
+    end
+end
+
+print("done")

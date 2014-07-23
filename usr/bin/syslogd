@@ -1,0 +1,5 @@
+-- -*- lua -*-
+
+local net = require("net")
+
+net.syslog.Server:cmd(...)

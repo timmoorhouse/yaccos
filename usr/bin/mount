@@ -1,0 +1,52 @@
+-- -*- lua -*-
+
+local cl  = require("cl")
+local vfs = require("vfs")
+
+local args = {...}
+local opt = cl.Options.new({
+        t = {
+            name    = "type",
+            arg     = "string",
+            default = "bind",
+            help    = "Mount type (nfs, bind, etc)",
+        },
+    })
+
+opt:set(args)
+
+if opt:get("help") then
+    opt:usage()
+    return
+end
+
+
+if #args == 0 then
+
+	for m in vfs.mounts() do
+		print(m:device().." on "..m:mountPoint())
+	end
+
+elseif #args == 2 then
+
+	local dev  = args[1]
+	local mp   = args[2]
+	local t    = opt:get("type")
+	local m
+
+	if t == "bind" then
+		m = vfs.Bind.new(dev, mp)
+	elseif t == "nfs" then
+		local net = require("net")
+		m = net.nfs.Mount.new(dev, mp)
+	else
+		error("Unsupported filesystem type "..t)
+	end
+	vfs.mount(m)
+
+else
+
+	opt:usage()
+	return
+
+end

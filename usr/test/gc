@@ -1,0 +1,48 @@
+-- -*- lua -*-
+
+local oo = require("oo")
+
+local did_gc_table
+
+function gc_table()
+	local t = { foo="table" }
+	local mt = {
+		__gc =
+			function(t)
+				print("table gc foo="..tostring(t.foo))
+				did_gc_table = true
+			end
+	}
+	setmetatable(t, mt)
+end
+
+local did_gc_object
+
+local GCTest = oo.class("GCTest")
+
+function GCTest.new(self, klass)
+    self = self or {}
+    GCTest.super.new(self, klass or GCTest)
+    return self
+end
+
+function GCTest.gc(self)
+	print("GCTest.gc")
+	did_gc_object = true
+end
+
+function gc_object()
+	local obj = GCTest.new()
+end
+
+print("start of gc test")
+
+gc_table()
+collectgarbage()
+assert(did_gc_table)
+
+gc_object()
+collectgarbage()
+assert(did_gc_object)
+
+print("end of gc test")

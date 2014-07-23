@@ -1,0 +1,88 @@
+-- -*- lua -*-
+
+--[[
+	Emulation of standard lua package library
+]]
+
+loaded = {}
+
+path = "usr/lib/?.lua"
+
+config = "/\n:\n?\n!\n-"
+
+local function split(s, pattern)
+	local r = {}
+	local ps = 1
+	while true do
+		local pe = string.find(s, pattern, ps, true)
+		if pe then
+			table.insert(r, string.sub(s, ps, pe-1))
+			ps = pe+#pattern
+		else
+			table.insert(r, string.sub(s, ps))
+			break
+		end
+	end
+	return r
+end
+
+-- Like string.gsub but only for plain strings
+local function sub(s, pattern, repl)
+	local ps = 1
+	local r = ""
+	while true do
+		local pe = string.find(s, pattern, ps, true)
+		if pe then
+			r = r..string.sub(s, ps, pe-1)..repl
+			ps = pe+#pattern
+		else
+			r = r..string.sub(s, ps)
+			break
+		end
+	end
+	return r
+end
+
+function searchpath(name, path, sep, rep)
+	local cfg = split(config, "\n")
+	sep = sep or "."
+	rep = rep or cfg[1]
+	local part = sub(name, sep, rep)
+
+	local int = cfg[3]
+	local psep = cfg[2]
+	local ps = 1
+	local pe
+	while true do
+		pe = string.find(path, psep, ps, true)
+		if pe then
+			pe = pe-1
+		end
+		local fname = string.gsub(string.sub(path, ps, pe), int, part)
+		if fs.exists(fname) then
+			return fname
+		else
+		end
+		if not pe then
+			break
+		end
+		ps = pe+2
+	end
+	return nil, "could not find "..name
+end
+
+local function loader(file)
+	return loadfile(file, "t", _ENV)
+end
+
+searchers = {
+	function(modname)
+		-- need to use package.path instead of path or changes will not be used
+		local file = searchpath(modname, package.path)
+		if file then
+			return loader, file
+		else
+			return nil, "could not find "..modname
+		end
+	end
+}

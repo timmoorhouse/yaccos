@@ -1,0 +1,95 @@
+-- -*- lua -*-
+
+local vfs = require("vfs") -- TODO
+
+local function try_sync(root, ...)
+	local opts = {}
+	for i,v in ipairs({...}) do
+		table.insert(opts, fs.combine(root, v))
+	end
+	table.insert(opts, "/")
+
+	shell.run(fs.combine(root, "usr/bin/sync"),
+	          "-f",
+	          unpack(opts))
+end
+
+local function try_dir(path)
+	if not fs.isDir(path) or not fs.exists(fs.combine(path, "usr/lib")) then
+		return
+	end
+	print("updating system from "..path)
+	local start = os.clock()
+	try_sync(path, "startup")
+	try_sync(path, "usr")
+	print(string.format("update completed in %.1f seconds", os.clock()-start))
+	return true
+end
+
+local function try_nfs(host)
+	if not fs.exists("nfs") then
+		fs.makeDir("nfs")
+	end
+
+	local mp = fs.combine("nfs", host)
+	if not fs.exists(mp) then
+		fs.makeDir(mp)
+	end
+
+	local m
+	for retry = 1,5 do
+		if retry > 1 then
+			os.sleep(2)
+			print("retrying...")
+		end
+		local net = require("net")
+		local r = { pcall(net.nfs.Mount.new, host..":", mp) } -- TODO
+		if r[1] then
+			m = r[2]
+			break
+		else
+			print(r[2])
+		end
+	end
+	if m then
+		vfs.mount(m)
+		local r = try_dir(mp)
+		-- TODO: umount?
+		return r
+	end
+end
+
+local function try_drive(side)
+	if not peripheral.getType(side) == "drive" then
+		return
+	end
+end
+
+---if net.modem() then
+---	if not update_done and os.getComputerLabel() ~= "srv" then
+---		tryrsync("srv")
+---		if not update_done and os.getComputerLabel() ~= "pkt" then
+---			tryrsync("pkt")
+---		end
+---	end
+---end
+
+local done = false
+for i,arg in ipairs({...}) do
+	if done then
+		break
+	end
+	--print("arg=["..arg.."]")
+	local c = string.find(arg, ":")
+	if c then
+		local proto = string.sub(arg, 1, c-1)
+		local rest  = string.sub(arg, c+1)
+		if proto == "nfs" then
+			done = try_nfs(rest)
+		elseif proto == "drive" then
+			done = try_drive(rest)
+		end
+	else
+		done = try_dir(arg)
+	end
+end

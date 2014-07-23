@@ -1,0 +1,78 @@
+-- -*- lua -*-
+
+local types = require("types")
+
+l = types.List.new()
+
+l:push_front('a')
+l:push_front('b')
+l:push_front('c')
+l:push_front('d')
+l:push_front('a')
+l:push_front('e')
+l:push_front('f')
+l:push_front('g')
+l:push_back(1)
+l:push_back(2)
+
+-- g, f, e, a, d, c, b, a, 1, 2
+
+for e in l:iterator() do
+    print("E:"..tostring(e))
+end
+
+print("elt(2) -> "..tostring(l:element(2)))
+print("elt(-2) -> "..tostring(l:element(-2)))
+print("l[2] -> "..tostring(l[2]))
+print("l[-2] -> "..tostring(l[-2]))
+
+print("l:size -> "..tostring(l:size()))
+print("#l -> "..tostring(#l))
+
+--error("foo")
+
+e = l:pop_front()
+print("pop_front() -> "..tostring(e))
+
+-- f, e, a, d, c, b, a, 1, 2
+
+for e in l:iterator() do
+    print("E:"..tostring(e))
+end
+
+e = l:pop_back()
+print("pop_back() -> "..tostring(e))
+
+-- f, e, a, d, c, b, a, 1
+
+for e in l:iterator() do
+    print("E:"..tostring(e))
+end
+
+print('remove(a)')
+l:remove('a')
+
+-- f, e, d, c, b, 1
+
+print("iterator")
+for e in l:iterator() do
+    print("E:"..tostring(e))
+end
+
+print("reverse_iterator")
+for e in l:reverse_iterator() do
+	print("E:"..tostring(e))
+end
+
+if false then
+	print("pairs")
+	for k,v in pairs(l) do
+		print(tostring(k).." -> "..tostring(v))
+	end
+
+	print("ipairs")
+	for i,v in ipairs(l) do
+		print(tostring(i).." -> "..tostring(v))
+	end
+end
+

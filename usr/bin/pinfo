@@ -1,0 +1,68 @@
+-- -*- lua -*-
+
+--[[
+
+
+]]
+
+function info(side)
+
+    print("side="..side)
+
+    if not peripheral.isPresent(side) then
+        error("No peripheral on "..side)
+    end
+
+    local p = peripheral.wrap(side)
+
+    local type = peripheral.getType(side)
+    print("type="..type)
+
+    write("methods:")
+    for i,v in pairs(peripheral.getMethods(side)) do
+        write(" "..v)
+    end
+    write("\n")
+
+    -- monitor
+    -- printer
+    -- computer
+
+    if type == "drive" then
+
+        local disk = p.isDiskPresent()
+        print("isDiskPresent="..tostring(disk))
+        if disk then
+            local data = p.hasData()
+            print("hasData="..tostring(data))
+            local audio = p.hasAudio()
+            print("hasAudio="..tostring(audio))
+        end
+
+    elseif type == "modem" then
+
+        --print("isOpen="..tostring(p.isOpen(channel)))
+        print("wireless="..tostring(p.isWireless()))
+
+    elseif type == "terminal_glasses_bridge" then
+
+        print("foo")
+
+    end
+
+
+
+end
+
+
+local args = {...}
+
+if #args > 0 then
+    for k,v in pairs(args) do
+        info(v)
+    end
+else
+    for k,v in pairs(peripheral.getNames()) do
+        info(v)
+    end
+end

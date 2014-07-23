@@ -1,0 +1,37 @@
+-- -*- lua -*-
+
+local event = require("event")
+local ui    = require("ui")
+local log   = require("log")
+
+term.clear()
+term.setCursorPos(1,1)
+
+s = ui.Screen.new()
+
+local w
+
+if true then
+	w = ui.TopLevel.new(s, 1, 1, 30, 20)
+	c = ui.Window.new(w, 1, 2)
+	lbl = ui.Label.new(c, "something very very long indeed abcdefghijklmnopqrstuvwxyz", 3, 2)
+	lbl2 = ui.Label.new(c, "another long thing", -2, 5)
+	b = ui.Button.new(c, "OK", 18, 7)
+	assert(w:isa(ui.Window))
+	assert(not w:isa(ui.Screen))
+	assert(s:isa(ui.Window))
+end
+
+if true then
+	w = ui.Dialog.new(s, 5, 2, 40, 15)
+end
+
+local sx, sy = s:getPosition()
+local sw, sh = s:getSize()
+log.debug("screen x="..tostring(sx).." y="..tostring(sy).." w="..tostring(sw).." h="..tostring(sh))
+
+s:redraw()
+
+event.loop()
+
+print("done tui test")

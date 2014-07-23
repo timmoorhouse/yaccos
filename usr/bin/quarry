@@ -1,0 +1,88 @@
+-- -*- lua -*-
+
+local oo     = require("oo")
+local bt     = require("bt")
+local tb     = require("bt.tb")
+local log    = require("log")
+local nt     = require("nt")
+local facing = require("facing")
+
+--[[
+    Mine in a quarry pattern until we hit something we can't dig
+
+    TODO:
+    - discard cobblestone
+    - go down 3 levels at a time and use digUp, digDown and dig
+
+]]
+
+if sleep == nil then
+    sleep =
+        function()
+        end
+end
+
+-- ****************************************************************************
+
+local Quarry = oo.class("Quarry", bt.Agent)
+
+function Quarry.new(size, self, klass)
+    self = self or {}
+    Quarry.super.new({}, self, klass or Quarry)
+
+    nt.reset()
+    nt.autoDig(true)
+    nt.autoAttack(true)
+    self._pad.auto_dig = true
+    self._pad.auto_attack = true
+    --nt.debug()
+
+    self:add(
+        bt.SavePosition.new("home"),
+        bt.All.new({
+            bt.Any.new({
+                bt.Condition.new(function(pad)
+                                     return pad.bedrock or tb.hasSpace() and tb.hasFuel(pad, "home")
+                                 end),
+                bt.Sequence.new({
+                    bt.Condition.new(function(pad)
+                                        return tb.hasSpace()
+                                     end),
+                    bt.Refuel.new("home"),
+                }),
+                bt.Sequence.new({
+                    bt.SavePosition.new("resume"),
+                    bt.Go.new("home"), -- TODO: face opposite direction
+                    bt.Unload.new(),
+                    bt.Retry.new(bt.Refuel.new("home", "resume"), 5),
+                    bt.Go.new("resume"),
+                })
+            }),
+            bt.Dig.new(size),
+        }),
+        bt.Go.new("home"), -- TODO: face opposite direction
+        bt.Unload.new()
+        -- TODO: turn around
+    )
+
+    return self
+end
+
+-- *************************************************************************
+
+local args = { ... }
+if #args ~= 1 then
+    error("Usage: quarry <size>")
+end
+
+local size = tonumber(args[1])
+if size < 1 then
+    error("size must be positive")
+end
+
+nt.debug(true)
+local q = Quarry.new(size)
+
+print("Excavating ...")
+q:run()
+print("Done mining")

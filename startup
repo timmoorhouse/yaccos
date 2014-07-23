@@ -1,0 +1,17 @@
+-- -*- lua -*-
+
+if _G.autoload then
+	-- startup already done, this looks like a telnet session
+	return
+end
+
+print "booting..."
+
+local dir = fs.getDir(shell.getRunningProgram())
+shell.run(fs.combine(dir,"usr/startup"))
+if fs.exists("startup.local") then
+	shell.run("startup.local")
+end
+
+local net = require("net")
+net.syslog.log("started")

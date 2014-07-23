@@ -1,0 +1,39 @@
+-- -*- lua -*-
+
+local args = {...}
+local opt = {}
+
+local ch = net.channels.syslog
+
+function server()
+	--shell.run("monitor", "right", "syslogd", "-F")
+    shell.run("syslogd", "start")
+	shell.run("telnetd", "start")
+	shell.run("nfsd", "start")
+	--shell.run("monitor", "right", "telnetd", "-F")
+end
+
+function client()
+    print("client")
+    local modem = net.modem()
+    local monitor = peripheral.wrap("left")
+    local c = 0
+    while true do
+        c = c+1
+        local msg = "message "..tostring(c)
+        print("Sending "..msg)
+        monitor.clear()
+        monitor.setCursorPos(2,8)
+        monitor.write("Sending "..msg)
+        net.transmit(modem, ch, 0, msg)
+        sleep(2)
+    end
+end
+
+if args[1] == "server" then
+    server()
+elseif args[1] == "client" then
+    client()
+else
+    error("Unsupported command "..args[1])
+end

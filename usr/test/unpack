@@ -1,0 +1,21 @@
+-- -*- lua -*-
+
+local function try(...)
+	print("args=("..table.concat({...}, ",")..")")
+end
+
+local foo = { "a", "b", "c" }
+local bar = { 1, 2, 3 }
+
+local function another(...)
+	try(unpack(foo), ...)
+end
+
+try(unpack(foo))
+try(unpack(bar))
+another(unpack(bar))
+try("pre", unpack(foo), "post")
+try("pre", unpack(foo))
+try(unpack(foo), "post")
+try(unpack(foo), unpack(bar))
+try("first", unpack(foo), unpack(bar), "last")

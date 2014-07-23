@@ -1,0 +1,41 @@
+-- -*- lua -*-
+
+local cl    = require("cl")
+local net   = require("net")
+local event = require("event")
+local dns   = require("net.dns")
+
+local args = {...}
+local opt = cl.Options.new({
+        F = {
+            name = "foreground",
+            help = "Run in foreground",
+        },
+        t = {
+            name    = "timeout",
+            arg     = "number",
+            default = 2,
+            help    = "timeout in seconds",
+        }
+    })
+
+opt:set(args)
+
+if opt:get("help") then
+    opt:usage()
+    return
+end
+
+local pingTime
+
+local function onMessage(sch, rch, msg, side, distance)
+    local latency = os.clock() - pingTime
+    print(msg:sender()..": "..tostring(latency).."s")
+    return true
+end
+
+net.listen(net.echo.protocols.echor, onMessage)
+pingTime = os.clock()
+net.send(dns.resolve(net.echo.protocols.echo, args[1]), "SOMETHING", net.echo.protocols.echo)
+event.loop(os.startTimer(opt:get("timeout")))
+net.ignore(net.echo.protocols.echor, onMessage)

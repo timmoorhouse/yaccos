@@ -1,0 +1,37 @@
+-- -*- lua -*-
+
+local event = require("event")
+
+--[[
+	this doesn't work yet ...
+]]
+
+function more(f)
+	local w, h = term.getSize()
+	local eof = false
+	while not eof do
+		term.clear()
+		term.setCursorPos(1, 1)
+		for y = 1,h-1 do
+			local l = f:read()
+			if not l then
+				eof = true
+				break
+			end
+			io.write(l)
+			io.write("\n")
+		end
+		term.setCursorPos(1, h)
+		term.write("--- Press any key to continue ---")
+		event.pull(event.key)
+	end
+end
+
+local args = {...}
+if #args > 0 then
+	for i,v in ipairs(args) do
+		more(io.open(shell.resolve(v), "r"))
+	end
+else
+	more(io.input()) -- TODO
+end

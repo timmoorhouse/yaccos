@@ -1,0 +1,9 @@
+-- -*- lua -*-
+
+local vfs = require("vfs")
+
+local args = {...}
+
+for i, mp in ipairs(args) do
+	vfs.umount(mp)
+end

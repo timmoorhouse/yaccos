@@ -1,0 +1,48 @@
+-- -*- lua -*-
+
+function mount(dir, mp)
+	print()
+	print("mount "..mp.." "..dir)
+	vfs.mount(vfs.Bind.new(dir, mp))
+end
+
+function umount(mp)
+	print()
+	print("umount "..mp)
+	vfs.umount(mp)
+end
+
+function query(path)
+	local dev, rpath = vfs.resolve(path)
+	print("path="..path.." mp="..dev:mountPoint().." rpath="..tostring(rpath))
+end
+
+function queries()
+	print()
+	for m in vfs.mounts() do
+		print(m:device().." on "..m:mountPoint())
+	end
+	query("x")
+	query("foo/x")
+	query("foo/bar/x")
+	query("foo/bar/baz/x")
+end
+
+queries()
+
+mount("masked", "foo/bar/baz")
+queries()
+
+mount("a/b/c", "foo")
+--queries()
+
+mount("1/2/3", "foo/bar")
+queries()
+
+umount("foo/bar/baz") -- should be a noop since masked
+queries()
+
+umount("foo")
+queries()
+
+

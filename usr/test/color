@@ -1,0 +1,32 @@
+-- -*- lua -*-
+
+term.clear()
+term.setCursorPos(1, 1)
+
+local col = {
+    white     = colors.white,
+    orange    = colors.orange,
+    magenta   = colors.magenta,
+    lightBlue = colors.lightBlue,
+    yellow    = colors.yellow,
+    lime      = colors.lime,
+    pink      = colors.pink,
+    gray      = colors.gray,
+    lightGray = colors.lightGray,
+    cyan      = colors.cyan,
+    purple    = colors.purple,
+    blue      = colors.blue,
+    brown     = colors.brown,
+    green     = colors.green,
+    red       = colors.red,
+    black     = colors.black
+}
+
+for k,v in pairs(col) do
+    term.setBackgroundColor(v)
+    term.write("-----")
+    term.setBackgroundColor(colors.black);
+    term.setTextColor(v)
+    print(k)
+end
+

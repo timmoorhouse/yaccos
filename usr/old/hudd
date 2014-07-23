@@ -1,0 +1,134 @@
+-- -*- lua -*-
+
+--[[
+    TODO:
+    recent syslog entries (fade out after delay)
+    latest status
+]]
+
+local args = {...}
+local opt = cl.Options.new({
+--        c = {
+--            name    = "channel",
+--            arg     = "number",
+--            default = net.channels.syslog,
+--            help    = "Channel to listen on",
+--        },
+    })
+
+opt:set(args)
+
+if opt:get("help") then
+    opt:usage()
+    return
+end
+
+local bridge = peripheral.wrap("left") -- TODO
+
+function dump(x)
+    for k,v in pairs(x) do
+        write(" "..tostring(k))
+    end
+    write("\n")
+end
+
+function square(b, x, y, w, h, c, opacity)
+    b.addBox(x, y, 1, h, c, opacity)
+    b.addBox(x, y, w, 1, c, opacity)
+    b.addBox(x+w-1, y, 1, h, c, opacity)
+    b.addBox(x, y+h-1, w, 1, c, opacity)
+end
+
+function box(b, x, y, w, h, c, opacity)
+    dump(b.addBox(x, y, w, h, c, opacity))
+    square(b, x, y, w, h, c, 1.0)
+end
+
+
+local function onSyslogMessage(bridge, protocol, src, msg)
+	--[[
+    local x, y = monitor.getCursorPos()
+    if x > 1 then
+        local maxx, maxy = monitor.getSize()
+        if y == maxy then
+            monitor.scroll(1)
+            monitor.setCursorPos(1, y)
+        else
+            monitor.setCursorPos(1, y+1)
+        end
+    end
+    monitor.setTextColour(colours.yellow)
+    monitor.write(string.format("%04d:%s", msg:day(), textutils.formatTime(msg:time(),true)))
+    monitor.setTextColour(colours.green)
+    monitor.write(string.format(" %-4s ", msg:sender()))
+    monitor.setTextColour(colours.white)
+    monitor.write(msg:msg())
+    return true
+    ]]
+    return false
+end
+
+local function status()
+    return net.handlers(opt:get("channel")) > 0
+end
+
+local function start()
+    if not status() then
+        net.listen(net.protocols.syslog, onSyslogMessage, bridge)
+
+		bridge.clear()
+		dump(bridge.addText(8, 3, "test", colours.green))
+		print("")
+		box(bridge, 3, 2, 50, 30, colours.green, 0.2)
+		--bridge.clear()
+    end
+end
+
+local function stop()
+    if status() then
+        net.ignore(net.protocols.syslog, onSyslogMessage)
+    end
+end
+
+if #args == 0 or args[1] == "start" then
+
+    if not status() then
+        start()
+        if status() then
+            log.init_success("hudd started")
+        else
+            log.init_failure("hudd failed")
+        end
+    end
+
+elseif args[1] == "stop" then
+
+    if status() then
+        stop()
+        if status() then
+            log.init_failure("hudd failed")
+        else
+            log.init_success("hudd stopped")
+        end
+    end
+
+elseif args[1] == "status" then
+
+    if status() then
+        print("hudd running")
+    else
+        print("hudd not running")
+    end
+
+elseif args[1] == "run" then
+
+    start()
+    event.loop()
+    stop()
+
+else
+
+    error("Unsupported operation "..args[1])
+
+end
+

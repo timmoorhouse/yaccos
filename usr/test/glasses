@@ -1,0 +1,27 @@
+-- -*- lua -*-
+
+b = peripheral.wrap("left")
+
+function dump(v)
+    for k,v in pairs(v) do
+        print("["..k.."]="..tostring(v))
+    end
+end
+
+function square(b, x, y, w, h, c, opacity)
+    b.addBox(x, y, 1, h, c, opacity)
+    b.addBox(x, y, w, 1, c, opacity)
+    b.addBox(x+w-1, y, 1, h, c, opacity)
+    b.addBox(x, y+h-1, w, 1, c, opacity)
+end
+
+function box(b, x, y, w, h, c, opacity)
+    dump(b.addBox(x, y, w, h, c, opacity))
+    square(b, x, y, w, h, c, 1.0)
+end
+
+b.clear()
+dump(b.addText(8, 3, "test", colours.green))
+print("")
+box(b, 3, 2, 50, 30, colours.green, 0.2)
+--b.clear()
