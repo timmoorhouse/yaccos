@@ -2,6 +2,7 @@
 local oo   = require("oo")
 local net  = require("net")
 local task = require("task")
+local log  = require("log")
 
 local Server = oo.class("net.nfs.Server", task.Daemon)
 
@@ -54,7 +55,7 @@ function Server.start(self)
                     end)
     net.rpc.register(net.nfs.protocol, "isDir",
                     function(mh, rpath)
-                        --print("isDir("..rpath..")="..tostring(fs.isDir(path(mh,rpath))))
+                        log.debug("isDir("..rpath..")="..tostring(fs.isDir(path(mh,rpath))))
                         return fs.isDir(path(mh, rpath))
                     end)
     net.rpc.register(net.nfs.protocol, "isReadOnly",

@@ -86,7 +86,7 @@ local function devcall(dev, f, ...)
 		return unpack(r, 2)
 	else
 		local mp = dev:mountPoint()
-		local msg = f.." on "..mp.." failed, unmounting"
+		local msg = f.." on "..mp.." failed, unmounting "..tostring(r[2])
 		print(msg)
 		net.syslog.log(msg)
 		vfs.umount(mp)
