@@ -48,7 +48,7 @@ local function onMessage(protocol, src, msg)
 
 	if m.result then
 
-		--log.debug("rpc result src="..tostring(src).." msg="..textutils.serialize(m))
+		log.debug("rpc result src="..tostring(src).." msg="..textutils.serialize(m))
 		os.queueEvent(event.rpc, m.id, unpack(m.result))
 
 	elseif m.f then
