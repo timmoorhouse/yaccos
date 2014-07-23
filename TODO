@@ -4,8 +4,8 @@
 - improved help support?
 - use peripheral.getNames?
 - autorun dir
-- github repo
 - /etc
+- get rid of _G hacks in usr/startup
 
 net:
 - dhcp?
@@ -33,9 +33,7 @@ commands:
 - grep
 - host
 - can use cl in sync, cp now
-- installer on pastebin
 - web browser
 - telnet: multishell?
 - better help command?
 - more: keybindings
-

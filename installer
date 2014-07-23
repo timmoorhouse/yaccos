@@ -1,0 +1,19 @@
+-- -*- lua -*-
+
+-- available as pastebin Z2VX8LWj
+
+print("yaccos installer")
+
+print("gitget by apemanzilla, JSON API by ElvishJerricco")
+if not fs.exists("gitget") then
+	shell.run("pastebin", "get", "6aMMzdwd", "gitget")
+end
+
+if fs.exists("startup") and not fs.exists("startup.local") then
+	fs.move("startup", "startup.local")
+end
+
+shell.run("gitget", "timmoorhouse", "yaccos")
+
+-- gitget user repo [branch] [path]
+--shell.run(fs.combine(tmp, "gitget"), "timmoorhouse", "yaccos")
