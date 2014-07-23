@@ -113,7 +113,7 @@ mdm.listen(rednet.CHANNEL_BROADCAST, onModemMessage)
 mdm.listen(rednet.CHANNEL_REPEAT,    onRepeatMessage)
 
 local function onRednetMessage(ev, src, raw, protocol)
-	log.debug("rednet msg from "..tostring(src).." on "..tostring(protocol))
+	--log.debug("rednet msg from "..tostring(src).." on "..tostring(protocol))
 	_handlers:fire(protocol, src, net.Message.unserialize(raw))
 	return true
 end

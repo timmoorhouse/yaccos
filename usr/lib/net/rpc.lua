@@ -48,7 +48,7 @@ local function onMessage(protocol, src, msg)
 
 	if m.result then
 
-		log.debug("rpc result src="..tostring(src).." msg="..textutils.serialize(m))
+		--log.debug("rpc result src="..tostring(src).." msg="..textutils.serialize(m))
 		os.queueEvent(event.rpc, m.id, unpack(m.result))
 
 	elseif m.f then
@@ -70,7 +70,7 @@ local function onMessage(protocol, src, msg)
 				r = { f(unpack(m.args)) }
 			end
 			_rpcinfo:pop_back()
-			log.debug("rpc call done src="..tostring(src).." id="..tostring(m.id))
+			--log.debug("rpc call done src="..tostring(src).." id="..tostring(m.id))
 			net.send(src, { id=m.id, result=r }, protocol)
 		else
 			net.syslog.log("No handler for rpc call "..m.f)
@@ -105,7 +105,8 @@ function rpc.rpc(domain, dest, opts, f, ...)
     		if ev[2] == id then
     			return unpack(ev, 3)
     		end
-    		error("out of sequence rpc result")
+    		--error("out of sequence rpc result")
+    		log.debug("out of sequence rpc result")
     	else
     		log.debug("rpc timeout dest="..tostring(dest).." f="..f)
     		net.syslog.log("RPC call to "..tostring(dest)..":"..f.." timed out")
