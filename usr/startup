@@ -43,7 +43,7 @@ function require(modname)
 		error("unable to load "..modname, 2)
 	end
 end
-_G.require = require
+_G.require = require -- TODO
 
 function autoload(p, pn, ...)
 	if not p._autoload then
@@ -67,7 +67,9 @@ function autoload(p, pn, ...)
 			end
 		end
 end
-_G.autoload = autoload
+_G.autoload = autoload -- TODO
+
+_G.shell = shell -- TODO
 
 -- we do our own handling of modem_message events, etc
 rednet.run = function()
@@ -123,8 +125,3 @@ if net.modem() then
 	end
 end
 shell.run("update", unpack(srcs))
-
--- TODO: move to startup.local
---if os.getComputerLabel() == "srv" or os.getComputerLabel() == "pkt" then
---	shell.run("nfsd", "start")
---end
