@@ -2,6 +2,7 @@
 local event = require("event")
 local mdm   = require("mdm")
 local types = require("types")
+local log   = require("log")
 
 local net = {}
 
