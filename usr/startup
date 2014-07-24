@@ -103,6 +103,9 @@ fs.copy         = vfs.copy
 fs.delete       = vfs.delete
 fs.open         = vfs.open
 
+
+shell.clearAlias("cp")
+
 -- TODO
 local net = require("net")
 local m = net.modem()
