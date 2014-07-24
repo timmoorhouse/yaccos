@@ -4,12 +4,10 @@ local root = fs.getDir(fs.getDir(shell.getRunningProgram()))
 
 shell.setPath("usr/bin:"..shell.path())
 help.setPath("usr/help:"..help.path())
---print(shell.path())
 
 os.loadAPI(fs.combine(root, "usr/lib/package"))
 
-print("root=["..root.."]") -- TODO
-if root ~= "." and root ~= "" then
+if root ~= "" then
 	shell.setPath(fs.combine(root, "usr/bin")..":"..shell.path())
 	package.path = fs.combine(root,"usr/lib/?.lua")..":"..package.path
 end
