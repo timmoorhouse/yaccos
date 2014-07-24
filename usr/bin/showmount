@@ -4,11 +4,7 @@ local net = require("net")
 
 local args = {...}
 
-local timeout = 3
-local host = net.dns.resolve(net.nfs.protocol, args[1] or "srv")
-local dir = nil
-
-local m = net.rpc.rpc(net.nfs.protocol, host, { timeout=timeout, }, "showmounts", dir)
+local m = net.nfs.showmount(args[1] or "srv", nil, 3)
 for i,v in ipairs(m) do
 	print(tostring(v.dir).." "..tostring(v.host))
 end

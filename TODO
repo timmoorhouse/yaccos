@@ -24,7 +24,6 @@ libraries:
 - ui: needs much work
 - event: event class?
 - nt: replace turtle?
-- nfs: showmount api
 
 filesystems:
 - github?
