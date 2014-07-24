@@ -13,7 +13,10 @@ local defaults = {
 function Options.new(spec, self, klass)
    	self = self or {}
     Options.super.new(self, klass or Options)
-    self._spec = defaults
+    self._spec = {}
+    for k,v in pairs(defaults) do
+    	self._spec[k] = v
+    end
     for k,v in pairs(spec) do
     	self._spec[k] = v
     end
