@@ -1,0 +1,4 @@
+-- -*- lua -*-
+
+io.write(shell.path())
+io.write("\n")
