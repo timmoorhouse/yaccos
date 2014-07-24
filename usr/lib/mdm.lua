@@ -3,14 +3,9 @@ local event = require("event")
 
 local mdm = {}
 
--- TODO: use peripheral.find("modem")
 function mdm.modem()
-	for i,side in ipairs(rs.getSides()) do
-		if peripheral.getType(side) == "modem" and peripheral.call(side, "isWireless") then
-			return peripheral.wrap(side)
-		end
-	end
-	return nil
+	-- TODO: do we need the isWireless? wired modems may not show up in the getNames list
+	return peripheral.find("modem", function(n,p) return p.isWireless() end)
 end
 
 local _handlers = event.HandlerList.new()
