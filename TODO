@@ -36,7 +36,6 @@ commands:
 - ls with -l
 - grep
 - host
-- can use cl in sync, cp now
 - web browser
 - telnet: multishell?
 - better help command?

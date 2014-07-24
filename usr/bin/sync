@@ -1,37 +1,37 @@
 -- -*- lua -*-
 
+local cl = require("cl")
+
 --[[
 	Somewhat like rsync except that it (so far) only handles local files
 	(mount a remote filesystem via NFS for now if you want remote support)
 ]]
 
 local args = {...}
+local opt = cl.Options.new({
+        f = {
+            name = "force",
+            help = "Allow overwriting of files",
+        },
+        n = {
+        	name = "dryrun",
+        	help = "Show operations to be performed without actually doing them",
+    	},
+    })
 
--- Don't use cl.Options since this gets called from startup before cl is loaded
-local opt = { }
-while #args > 0 do
-	if args[1] == "--" then
-		break
-	elseif args[1] == "-f" then
-		opt.force = true
-	elseif args[1] == "-n" then
-		opt.dryrun = true
-	else
-		break
-	end
-	table.remove(args, 1)
-end
+opt:set(args)
 
-if #args < 2 then
-	print("usage: sync <src>.. <dest>")
-	return
+if opt:get("help") or #args < 2 then
+	print("Usage: sync <src>... <dst>")
+    opt:usage()
+    return
 end
 
 local function delete(f)
 	if fs.exists(f) then
-		if opt.dryrun then
+		if opt:get("dryrun") then
 			print("rm "..f)
-		elseif opt.force then
+		elseif opt:get("force") then
 			fs.delete(f)
 		else
 			print(f.." already exists")
@@ -41,7 +41,7 @@ end
 
 local function makeDir(dir)
 	if not fs.isDir(dir) then
-		if opt.dryrun then
+		if opt:get("dryrun") then
 			print("mkdir "..dir)
 		else
 			delete(dir)
@@ -51,7 +51,7 @@ local function makeDir(dir)
 end
 
 local function copy(src, dst)
-	if opt.dryrun then
+	if opt:get("dryrun") then
 		print("cp "..src.." "..dst)
 	else
 		delete(dst)
@@ -74,7 +74,7 @@ local function sync(src, dst)
 			insrc[entry] = true
 			sync(fs.combine(src, entry), dst)
 		end
-		if fs.exists(dst) and opt.force then
+		if fs.exists(dst) and opt:get("force") then
 			for i,entry in ipairs(fs.list(dst)) do
 				if not insrc[entry] then
 					delete(fs.combine(dst, entry))

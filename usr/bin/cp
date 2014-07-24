@@ -1,5 +1,7 @@
 -- -*- lua -*-
 
+local cl = require("cl")
+
 --[[
 
 	Slightly improved copy command.
@@ -10,27 +12,27 @@
 ]]
 
 local args = {...}
+local opt = cl.Options.new({
+        f = {
+            name = "force",
+            help = "Allow overwriting of files",
+        },
+        n = {
+        	name = "dryrun",
+        	help = "Show operations to be performed without actually doing them",
+    	},
+        r = {
+        	name = "recursive",
+        	help = "Recurse into subdirectories",
+    	},
+    })
 
--- Don't use cl.Options since cp gets called from startup before cl is loaded
-local opt = { }
-while #args > 0 do
-	if args[1] == "--" then
-		break
-	elseif args[1] == "-f" then
-		opt.force = true
-	elseif args[1] == "-r" then
-		opt.recursive = true
-	elseif args[1] == "-n" then
-		opt.dryrun = true
-	else
-		break
-	end
-	table.remove(args, 1)
-end
+opt:set(args)
 
-if #args < 2 then
+if opt:get("help") or #args < 2 then
 	print("Usage: cp <src>... <dst>")
-	return
+    opt:usage()
+    return
 end
 
 local function cp(src, dst)
@@ -42,10 +44,10 @@ local function cp(src, dst)
 		if fs.exists(dst) and not fs.isDir(dst) then
 			error(dst.." is not a directory")
 		end
-		if not fs.exists(dst) and not opt.dryrun then
+		if not fs.exists(dst) and not opt:get("dryrun") then
 			fs.makeDir(dst)
 		end
-		if opt.recursive then
+		if opt:get("recursive") then
 			for i,entry in ipairs(fs.list(src)) do
 				cp(fs.combine(src, entry), dst)
 			end
@@ -53,11 +55,11 @@ local function cp(src, dst)
 			error(src.." is a directory")
 		end
 	else
-		if opt.dryrun then
+		if opt:get("dryrun") then
 			print("cp "..src.." "..dst)
 		else
 			if fs.exists(dst) then
-				if opt.force then
+				if opt:get("force") then
 					fs.delete(dst)
 				else
 					error(dst.." exists")
