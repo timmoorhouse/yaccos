@@ -27,20 +27,13 @@ local function seqno()
 	return last_seqno
 end
 
--- Find a wireless modem if one is available
-
--- TODO: obsolete
-function net.modem()
-	return mdm.modem()
-end
-
 function net.hostname()
 	return os.getComputerLabel() or "<"..tostring(os.getComputerID())..">"
 end
 
 -- **************************************************************************
 
-local _handlers = event.HandlerList.new()
+local hl = event.HandlerList.new()
 
 -- Track whether or not a message has already been seen (using UUIDs)
 -- Only 100 previous messages are tracked
@@ -66,20 +59,28 @@ local function seen(id)
 	return false
 end
 
+local function onRepeatMessage(sch, rch, raw, side, distance)
+	if type(raw) == "table" and raw.nMessageID and raw.nRecipient then
+		if not seen(raw.nMessageID) then
+			peripheral.call(side, "transmit", rednet.CHANNEL_REPEAT, rch, raw)
+			peripheral.call(side, "transmit", raw.nRecipient, rch, raw)
+		end
+	end
+	return true
+end
+
 local _relaying = false
 
 function net.relay(enable)
-	-- TODO: open modem, open channel !?!?!?!
-	if enable then
-		local m = net.modem()
-		if m then
-			m.open(rednet.CHANNEL_REPEAT)
-		end
+	if enable and not _relaying then
+		mdm.listen(rednet.CHANNEL_REPEAT, onRepeatMessage)
+	elseif _relaying and not enable then
+		mdm.ignore(rednet.CHANNEL_REPEAT, onRepeatMessage)
 	end
 	_relaying = enable
 end
 
-function net.relaying(ch)
+function net.relaying()
 	return _relaying
 end
 
@@ -98,38 +99,27 @@ local function onModemMessage(sch, rch, raw, side, distance)
 	return true
 end
 
-local function onRepeatMessage(sch, rch, raw, side, distance)
-	if type(raw) == "table" and raw.nMessageID and raw.nRecipient then
-		if not seen(raw.nMessageID) then
-			peripheral.call(side, "transmit", rednet.CHANNEL_REPEAT, rch, raw)
-			peripheral.call(side, "transmit", raw.nRecipient, rch, raw)
-		end
-	end
-	return true
-end
-
 mdm.listen(os.getComputerID(),       onModemMessage)
 mdm.listen(rednet.CHANNEL_BROADCAST, onModemMessage)
-mdm.listen(rednet.CHANNEL_REPEAT,    onRepeatMessage)
 
 local function onRednetMessage(ev, src, raw, protocol)
 	--log.debug("rednet msg from "..tostring(src).." on "..tostring(protocol))
-	_handlers:fire(protocol, src, net.Message.unserialize(raw))
+	hl:fire(protocol, src, net.Message.unserialize(raw))
 	return true
 end
 
 event.listen(event.rednet_message, onRednetMessage)
 
 function net.listen(protocol, callback, arg)
-	return _handlers:add(protocol, callback, arg)
+	return hl:add(protocol, callback, arg)
 end
 
 function net.ignore(protocol, callback)
-	_handlers:remove(protocol, callback)
+	hl:remove(protocol, callback)
 end
 
 function net.handlers(protocol)
-	return _handlers:handlers(protocol)
+	return hl:handlers(protocol)
 end
 
 -- following API of rednet.send
@@ -145,12 +135,6 @@ end
 -- following API of rednet.broadcast
 function net.broadcast(msg, protocol)
 	net.send(rednet.CHANNEL_BROADCAST, msg, protocol)
-end
-
--- TODO
-function net.open(modem)
-	modem.open(os.getComputerID())
-	modem.open(rednet.CHANNEL_BROADCAST)
 end
 
 return net

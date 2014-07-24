@@ -16,7 +16,7 @@ end
 
 local function onMessage(self, sch, rch, msg, side, distance)
     if msg == "PING" then
-        self.modem.transmit(rch, sch, {self.x,self.y,self.z})
+        peripheral.call(side, "transmit", rch, sch, {self.x,self.y,self.z})
     end
     return true
 end
@@ -28,7 +28,6 @@ end
 function Server.start(self, ...)
 
     local args = {...}
-    self.modem = net.modem()
 
     -- Determine position
     if #args >= 3 then
@@ -53,14 +52,12 @@ function Server.start(self, ...)
 
     net.syslog.log("Server started for ("..self.x..","..self.y..","..self.z..")")
 
-    self.modem.open(gps.CHANNEL_GPS)
     mdm.listen(gps.CHANNEL_GPS, onMessage, self)
 
 end
 
 function Server.stop(self)
-    net.ignore(gps.CHANNEL_GPS, onMessage)
-    modem.close(gps.channel_GPS)
+    mdm.ignore(gps.CHANNEL_GPS, onMessage)
 end
 
 return Server

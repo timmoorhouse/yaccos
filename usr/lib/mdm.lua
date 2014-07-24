@@ -8,23 +8,34 @@ function mdm.modem()
 	return peripheral.find("modem", function(n,p) return p.isWireless() end)
 end
 
-local _handlers = event.HandlerList.new()
+local hl = event.HandlerList.new()
 
 function mdm.listen(ch, handler, arg)
-	-- TODO: auto open
-	return _handlers:add(ch, handler, arg)
+	if hl:handlers(ch) == 0 then
+		local m = mdm.modem()
+		if m then
+			m.open(ch)
+		end
+	end
+	return hl:add(ch, handler, arg)
 end
 
 function mdm.ignore(ch, handler)
-	_handlers:remove(ch, handler)
+	hl:remove(ch, handler)
+	if hl:handlers(ch) == 0 then
+		local m = mdm.modem()
+		if m then
+			m.close(ch)
+		end
+	end
 end
 
 function mdm.handlers(ch)
-	return _handlers:handlers(ch)
+	return hl:handlers(ch)
 end
 
 local function onModemMessage(ev, side, sch, rch, raw, distance)
-	_handlers:fire(sch, rch, raw, side, distance)
+	hl:fire(sch, rch, raw, side, distance)
 	return true
 end
 

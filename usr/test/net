@@ -15,7 +15,7 @@ end
 
 function client()
     print("client")
-    local modem = net.modem()
+    local modem = mdm.modem()
     local monitor = peripheral.wrap("left")
     local c = 0
     while true do

@@ -8,6 +8,7 @@
 - write and print not using io.write? make io.write use term?
 - get rid of word wrapping in write?
 - unit test suite
+- switch to guaranteed unique message and rpc ids
 
 emulator:
 - root is "." in emu, "" on real
@@ -24,10 +25,10 @@ libraries:
 - persistent data
 - vfs: disk.getMountPath?
 - vfs: does fs.find work?
-- mdm: auto open/close channels
 - ui: needs much work
 - event: event class?
 - nt: replace turtle?
+- cl: integrate help api
 
 filesystems:
 - github?

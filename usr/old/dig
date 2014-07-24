@@ -26,7 +26,7 @@ local xDir,zDir = 0,1
 local goTo -- Filled in further down
 local refuel -- Filled in further down
 
-local modem = net.modem()
+local modem = mdm.modem()
 
 local function status(msg)
 	print(msg)

@@ -103,15 +103,7 @@ fs.copy         = vfs.copy
 fs.delete       = vfs.delete
 fs.open         = vfs.open
 
-
 shell.clearAlias("cp")
-
--- TODO
-local net = require("net")
-local m = net.modem()
-if m then
-	net.open(m)
-end
 
 shell.run("routed", "start")
 shell.run("echod", "start")
@@ -119,7 +111,8 @@ shell.run("telnetd", "start")
 --shell.run("dnsd", "start")
 
 local srcs = { "disk" }
-if net.modem() then
+local mdm = require("mdm")
+if mdm.modem() then
 	if os.getComputerLabel() ~= "srv" then
 		table.insert(srcs, "nfs:srv")
 		if os.getComputerLabel() ~= "pkt" then

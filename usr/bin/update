@@ -65,15 +65,6 @@ local function try_drive(side)
 	end
 end
 
----if net.modem() then
----	if not update_done and os.getComputerLabel() ~= "srv" then
----		tryrsync("srv")
----		if not update_done and os.getComputerLabel() ~= "pkt" then
----			tryrsync("pkt")
----		end
----	end
----end
-
 local done = false
 for i,arg in ipairs({...}) do
 	if done then
