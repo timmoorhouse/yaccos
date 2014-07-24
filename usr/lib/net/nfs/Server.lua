@@ -55,7 +55,7 @@ function Server.start(self)
                     end)
     net.rpc.register(net.nfs.protocol, "isDir",
                     function(mh, rpath)
-                        log.debug("isDir("..rpath..")="..tostring(fs.isDir(path(mh,rpath))))
+                        --log.debug("isDir("..rpath..")="..tostring(fs.isDir(path(mh,rpath))))
                         return fs.isDir(path(mh, rpath))
                     end)
     net.rpc.register(net.nfs.protocol, "isReadOnly",

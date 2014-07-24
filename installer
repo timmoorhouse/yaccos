@@ -14,6 +14,12 @@ if fs.exists("startup") and not fs.exists("startup.local") then
 end
 
 shell.run("gitget", "timmoorhouse", "yaccos")
-
--- gitget user repo [branch] [path]
---shell.run(fs.combine(tmp, "gitget"), "timmoorhouse", "yaccos")
+if not fs.exists("usr/doc") then
+	fs.makeDir("usr/doc")
+end
+for i,f in ipairs({"LICENSE", "README.md", "TODO"}) do
+	fs.move(f, fs.combine("usr/doc", f))
+end
+for i,f in ipairs({"installer", "json", "gitget"}) do
+	fs.delete(f)
+end
