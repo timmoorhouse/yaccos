@@ -102,6 +102,7 @@ fs.delete       = vfs.delete
 fs.open         = vfs.open
 
 shell.clearAlias("cp")
+shell.clearAlias("ls")
 
 shell.run("routed", "start")
 shell.run("echod", "start")

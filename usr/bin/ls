@@ -1,0 +1,81 @@
+-- -*- lua -*-
+
+local cl = require("cl")
+
+local args = {...}
+local opt = cl.Options.new({
+        l = {
+            name = "long",
+            help = "Long format, showing file sizes",
+        },
+        r = {
+        	name = "recursive",
+        	help = "Recurse into subdirectories",
+    	},
+    })
+
+opt:set(args)
+
+if opt:get("help") then
+	print("Usage: ls <file|dir>...")
+    opt:usage()
+    return
+end
+
+function list(dir)
+
+	local all = fs.list(dir)
+	table.sort(all)
+
+	local files = {}
+	local dirs  = {}
+
+	if opt:get("long") or opt:get("recursive") then
+		term.setTextColour(colours.yellow)
+		io.write(dir)
+		term.setTextColour(colours.white)
+		io.write(":")
+		io.write("\n")
+	end
+
+	for n,item in pairs(all) do
+		if string.sub(item, 1, 1) ~= "." then
+			local path = fs.combine(dir, item)
+			if opt:get("long") then
+				if fs.isDir(path) then
+					term.setTextColour(colours.green)
+				end
+				io.write(string.format("%8d %s", fs.getSize(path), item))
+				term.setTextColour(colours.white)
+				io.write("\n")
+			end
+			if fs.isDir(path) then
+				table.insert(dirs, item)
+			else
+				table.insert(files, item)
+			end
+		end
+	end
+
+	if not opt:get("long") then
+		if term.isColour() then
+			textutils.tabulate(colors.green, dirs, colors.white, files)
+		else
+			textutils.tabulate(dirs, files)
+		end
+	end
+
+	if opt:get("recursive") then
+		for i,subdir in pairs(dirs) do
+			list(fs.combine(dir, subdir))
+		end
+	end
+end
+
+if #args > 0 then
+	for i,dir in ipairs(args) do
+		list(shell.resolve(dir))
+	end
+else
+	list(shell.dir())
+end

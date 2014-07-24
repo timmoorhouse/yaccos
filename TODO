@@ -1,6 +1,6 @@
 
 - proxy class
-- streams? pipes? redirection?
+- pipes: how to support colours? escape sequences?
 - improved help support?
 - autorun dir
 - /etc
@@ -47,3 +47,14 @@ commands:
 - find
 - head
 - tail
+
+boot:
+- bios: os.run({}, "shell")
+- shell: shell.run("rom/startup"), shell.run(command line arg) or shell.run(entered commands)
+- rom/startup: shell.run("startup")
+- startup: shell.run("usr/startup")
+
+- shell.run does an os.run with new env
+- os.run will import into env provided from _G
+- os.loadAPI does a loadfile with new env then inserts into _G
+
