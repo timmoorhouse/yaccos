@@ -30,7 +30,8 @@ local pingTime
 
 local function onMessage(sch, rch, msg, side, distance)
     local latency = os.clock() - pingTime
-    print(msg:sender()..": "..tostring(latency).."s")
+    io.write(msg:sender()..": "..tostring(latency).."s")
+    io.write("\n")
     return true
 end
 

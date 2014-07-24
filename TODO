@@ -6,6 +6,10 @@
 - autorun dir
 - /etc
 - get rid of _G hacks in usr/startup
+- root is "." in emu, "" on real
+- encryption?
+- write and print not using io.write? make io.write use term?
+- get rid of word wrapping in write?
 
 net:
 - dhcp?
@@ -20,6 +24,7 @@ libraries:
 - ui: needs much work
 - event: event class?
 - nt: replace turtle?
+- nfs: showmount api
 
 filesystems:
 - github?
@@ -37,3 +42,6 @@ commands:
 - telnet: multishell?
 - better help command?
 - more: keybindings
+- find
+- head
+- tail

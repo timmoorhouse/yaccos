@@ -7,7 +7,8 @@
 
 function info(side)
 
-    print("side="..side)
+    io.write("side="..side)
+    io.write("\n")
 
     if not peripheral.isPresent(side) then
         error("No peripheral on "..side)
@@ -16,13 +17,14 @@ function info(side)
     local p = peripheral.wrap(side)
 
     local type = peripheral.getType(side)
-    print("type="..type)
+    io.write("type="..type)
+    io.write("\n")
 
-    write("methods:")
+    io.write("methods:")
     for i,v in pairs(peripheral.getMethods(side)) do
-        write(" "..v)
+        io.write(" "..v)
     end
-    write("\n")
+    io.write("\n")
 
     -- monitor
     -- printer
@@ -31,22 +33,27 @@ function info(side)
     if type == "drive" then
 
         local disk = p.isDiskPresent()
-        print("isDiskPresent="..tostring(disk))
+        io.write("isDiskPresent="..tostring(disk))
+        io.write("\n")
         if disk then
             local data = p.hasData()
-            print("hasData="..tostring(data))
+            io.write("hasData="..tostring(data))
+            io.write("\n")
             local audio = p.hasAudio()
-            print("hasAudio="..tostring(audio))
+            io.write("hasAudio="..tostring(audio))
+            io.write("\n")
         end
 
     elseif type == "modem" then
 
         --print("isOpen="..tostring(p.isOpen(channel)))
-        print("wireless="..tostring(p.isWireless()))
+        io.write("wireless="..tostring(p.isWireless()))
+        io.write("\n")
 
     elseif type == "terminal_glasses_bridge" then
 
-        print("foo")
+        io.write("foo")
+        io.write("\n")
 
     end
 
