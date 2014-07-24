@@ -11,36 +11,20 @@ function Bind.new(dir, mp, self, klass)
     return self
 end
 
-function Bind.list(self, path)
-	return vfs.list(fs.combine(self._dev, path))
-end
-
-function Bind.exists(self, path)
-	return vfs.exists(fs.combine(self._dev, path))
-end
-
-function Bind.isDir(self, path)
-	return vfs.isDir(fs.combine(self._dev, path))
-end
-
-function Bind.isReadOnly(self, path)
-	return vfs.isReadOnly(fs.combine(self._dev, path))
-end
-
-function Bind.getDrive(self, path)
-	return vfs.getDrive(fs.combine(self._dev, path))
-end
-
-function Bind.getSize(self, path)
-	return vfs.getSize(fs.combine(self._dev, path))
-end
-
-function Bind.getFreeSpace(self, path)
-	return vfs.getFreeSpace(fs.combine(self._dev, path))
-end
-
-function Bind.makeDir(self, path)
-	vfs.makeDir(fs.combine(self._dev, path))
+for i,v in ipairs({ "list",
+                    "exists",
+                    "isDir",
+                    "isReadOnly",
+                    "getDrive",
+                    "getSize",
+                    "getFreeSpace",
+                    "makeDir",
+                    "delete",
+                  }) do
+    Bind[v] =
+        function(self, path)
+            return vfs[v](fs.combine(self._dev, path))
+        end
 end
 
 function Bind.move(self, from, to)
@@ -51,10 +35,6 @@ end
 function Bind.copy(self, from, to)
 	vfs.copy(fs.combine(self._dev, from),
 	         fs.combine(self._dev, to))
-end
-
-function Bind.delete(self, path)
-	vfs.delete(fs.combine(self._dev, path))
 end
 
 function Bind.open(self, path, mode)
