@@ -6,7 +6,8 @@ Yet another ComputerCraft OS
 Installation
 ------------
 
-pastebin run Z2VX8LWj
-reboot
+Run the following commands on a computer:
+* pastebin run Z2VX8LWj
+* reboot
 
 
