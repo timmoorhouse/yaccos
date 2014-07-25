@@ -12,7 +12,6 @@
 
 emulator:
 - get rid of _G hacks in usr/startup
-- reboot support?
 
 net:
 - dhcp?

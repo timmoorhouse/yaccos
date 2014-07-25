@@ -14,7 +14,7 @@ function HandlerList.new(self, klass)
     return self
 end
 
-function HandlerList.add(self, ev, handler, ...)
+function HandlerList.listen(self, ev, handler, ...)
 	if not ev then
 		error("event missing", 2)
 	end
@@ -26,7 +26,7 @@ function HandlerList.add(self, ev, handler, ...)
 	return e
 end
 
-function HandlerList.remove(self, ev, handler)
+function HandlerList.ignore(self, ev, handler)
 	local hl = self._handlers[ev]
 	if hl then
 		hl:remove_if(function(h)

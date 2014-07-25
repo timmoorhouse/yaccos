@@ -55,11 +55,11 @@ autoload(event, "event",
 local handlers = event.HandlerList.new()
 
 function event.listen(ev, callback, ...)
-	return handlers:add(ev, callback, ...)
+	return handlers:listen(ev, callback, ...)
 end
 
 function event.ignore(ev, callback)
-	handlers:remove(ev, callback)
+	handlers:ignore(ev, callback)
 end
 
 local idlePending = false

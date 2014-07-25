@@ -111,11 +111,11 @@ end
 event.listen(event.rednet_message, onRednetMessage)
 
 function net.listen(protocol, callback, arg)
-	return hl:add(protocol, callback, arg)
+	return hl:listen(protocol, callback, arg)
 end
 
 function net.ignore(protocol, callback)
-	hl:remove(protocol, callback)
+	hl:ignore(protocol, callback)
 end
 
 function net.handlers(protocol)

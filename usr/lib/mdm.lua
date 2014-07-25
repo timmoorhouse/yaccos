@@ -17,11 +17,11 @@ function mdm.listen(ch, handler, arg)
 			m.open(ch)
 		end
 	end
-	return hl:add(ch, handler, arg)
+	return hl:listen(ch, handler, arg)
 end
 
 function mdm.ignore(ch, handler)
-	hl:remove(ch, handler)
+	hl:ignore(ch, handler)
 	if hl:handlers(ch) == 0 then
 		local m = mdm.modem()
 		if m then
