@@ -1,0 +1,7 @@
+-- -*- lua -*-
+
+for i,arg in ipairs({...}) do
+	for j,f in fs.find(arg) do
+		print(f)
+	end
+end
