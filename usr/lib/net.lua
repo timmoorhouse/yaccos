@@ -33,7 +33,7 @@ end
 
 -- **************************************************************************
 
-local hl = event.HandlerList.new()
+local hl = event.KeyedEvent.new()
 
 -- Track whether or not a message has already been seen (using UUIDs)
 -- Only 100 previous messages are tracked

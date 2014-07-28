@@ -49,10 +49,11 @@ local event = {
 }
 
 autoload(event, "event",
+         "Event",
          "Handler",
-         "HandlerList")
+         "KeyedEvent")
 
-local handlers = event.HandlerList.new()
+local handlers = event.KeyedEvent.new()
 
 function event.listen(ev, callback, ...)
 	return handlers:listen(ev, callback, ...)

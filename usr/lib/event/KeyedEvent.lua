@@ -1,20 +1,19 @@
 
 local oo    = require("oo")
---local event = require("event")
 local types = require("types")
 -- can't require event since we're used by event
 local Handler = require("event.Handler")
 
-local HandlerList = oo.class("event.HandlerList")
+local KeyedEvent = oo.class("event.KeyedEvent")
 
-function HandlerList.new(self, klass)
+function KeyedEvent.new(self, klass)
     self = self or {}
-    HandlerList.super.new(self, klass or HandlerList)
+    KeyedEvent.super.new(self, klass or KeyedEvent)
 	self._handlers = {}
     return self
 end
 
-function HandlerList.listen(self, ev, handler, ...)
+function KeyedEvent.listen(self, ev, handler, ...)
 	if not ev then
 		error("event missing", 2)
 	end
@@ -26,7 +25,7 @@ function HandlerList.listen(self, ev, handler, ...)
 	return e
 end
 
-function HandlerList.ignore(self, ev, handler)
+function KeyedEvent.ignore(self, ev, handler)
 	local hl = self._handlers[ev]
 	if hl then
 		hl:remove_if(function(h)
@@ -38,7 +37,7 @@ function HandlerList.ignore(self, ev, handler)
 	end
 end
 
-function HandlerList.handlers(self, ev)
+function KeyedEvent.handlers(self, ev)
 	local hl = self._handlers[ev]
 	if hl then
 		return hl:size()
@@ -47,7 +46,7 @@ function HandlerList.handlers(self, ev)
 	end
 end
 
-function HandlerList.fire(self, ev, ...)
+function KeyedEvent.fire(self, ev, ...)
 	local args = {...}
     local hl = self._handlers[ev]
     --if os.log and hl then
@@ -61,4 +60,4 @@ function HandlerList.fire(self, ev, ...)
 	return false
 end
 
-return HandlerList
+return KeyedEvent

@@ -8,7 +8,7 @@ function mdm.modem()
 	return peripheral.find("modem", function(n,p) return p.isWireless() end)
 end
 
-local hl = event.HandlerList.new()
+local hl = event.KeyedEvent.new()
 
 function mdm.listen(ch, handler, arg)
 	if hl:handlers(ch) == 0 then
