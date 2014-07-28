@@ -53,6 +53,7 @@ function Screen.onKey(self, k)
                 -- handle wraparound
                 c:focusNext()
             end
+            self._focus = self._children:size()
             return true
         end
 

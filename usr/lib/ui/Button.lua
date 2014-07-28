@@ -1,6 +1,7 @@
 
-local oo = require("oo")
-local ui = require("ui")
+local oo  = require("oo")
+local ui  = require("ui")
+local log = require("log")
 
 local Button = oo.class("ui.Button", ui.Window)
 
@@ -37,6 +38,11 @@ function Button._canFocus(self)
     return true
 end
 
+function Button._activate(self)
+    log.debug("Button._activate "..tostring(self._text))
+    -- TODO
+end
+
 function Button.onFocus(self, focus)
     if focus then
         self:setTextColour(colours.yellow)
@@ -46,6 +52,22 @@ function Button.onFocus(self, focus)
         self:setBackgroundColour(colours.blue)
     end
     self:_invalidate()
+end
+
+function Button.onClick(self, x, y, button)
+    log.debug("Button.onClick button="..tostring(button))
+    if button == 1 then
+        self:_activate()
+        return true
+    end
+end
+
+function Button.onKey(self, k)
+    log.debug("Button.onKey k="..tostring(k))
+    if k == keys.enter then
+        self:_activate()
+        return true
+    end
 end
 
 return Button

@@ -107,13 +107,19 @@ function Window._find(self, f, x, y, ...)
 end
 
 function Window._traverse(self, f, ...)
+    log.debug("Window._traverse f="..tostring(f))
     if type(f) == "function" and f(self, ...) then
+        log.debug("... Window._traverse handled")
         return self
     elseif type(f) == "string" and self[f] and self[f](self, ...) then
+        log.debug("... Window._traverse handled")
         return self
     end
+    log.debug("Window._traverse focus="..tostring(self._focus))
     if self._focus and self._focus > 0 then
-        return self._children:element(self._focus):_traverse(f, ...)
+        local c = self._children:element(self._focus)
+        log.debug("... Window._traverse c="..tostring(c))
+        return c:_traverse(f, ...)
     end
     return nil
 end
