@@ -13,32 +13,32 @@ function KeyedEvent.new(self, klass)
     return self
 end
 
-function KeyedEvent.listen(self, ev, handler, ...)
-	if not ev then
-		error("event missing", 2)
+function KeyedEvent.listen(self, key, handler, ...)
+	if not key then
+		error("key missing", 2)
 	end
-	if not self._handlers[ev] then
-		self._handlers[ev] = types.List.new()
+	if not self._handlers[key] then
+		self._handlers[key] = types.List.new()
 	end
-	local e = Handler.new(handler, ev, {...})
-	self._handlers[ev]:push_front(e)
+	local e = Handler.new(handler, {...})
+	self._handlers[key]:push_front(e)
 	return e
 end
 
-function KeyedEvent.ignore(self, ev, handler)
-	local hl = self._handlers[ev]
+function KeyedEvent.ignore(self, key, handler)
+	local hl = self._handlers[key]
 	if hl then
 		hl:remove_if(function(h)
 					     return h._handler == handler
 					 end)
 		if hl:empty() then
-			self._handlers[ev] = nil
+			self._handlers[key] = nil
 		end
 	end
 end
 
-function KeyedEvent.handlers(self, ev)
-	local hl = self._handlers[ev]
+function KeyedEvent.handlers(self, key)
+	local hl = self._handlers[key]
 	if hl then
 		return hl:size()
 	else
@@ -46,15 +46,15 @@ function KeyedEvent.handlers(self, ev)
 	end
 end
 
-function KeyedEvent.fire(self, ev, ...)
+function KeyedEvent.fire(self, key, ...)
 	local args = {...}
-    local hl = self._handlers[ev]
+    local hl = self._handlers[key]
     --if os.log and hl then
-    --	os.log("hl.fire ev="..tostring(ev).." size="..tostring(hl:size()))
+    --	os.log("hl.fire key="..tostring(key).." size="..tostring(hl:size()))
     --end
 	if hl then
 		hl:remove_if(function(h)
-		             	return not h:fire(ev, unpack(args))
+		             	return not h:fire(key, unpack(args))
 		             end)
 	end
 	return false

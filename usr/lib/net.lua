@@ -85,15 +85,8 @@ function net.relaying()
 end
 
 local function onModemMessage(sch, rch, raw, side, distance)
-	--print("raw="..textutils.serialize(raw))
-	--print("modem message to "..tostring(sch))
-
-	if sch == os.getComputerID() or sch == rednet.CHANNEL_BROADCAST then
-		--log.debug("my id="..tostring(os.getComputerID()))
-		--log.debug("received sch="..tostring(sch).." rch="..tostring(rch).." msg="..textutils.serialize(raw))
-    	if type(raw) == "table" and raw.nMessageID and not seen(raw.nMessageID) then -- TODO
-		   	os.queueEvent(event.rednet_message, rch, raw.message, raw.sProtocol)
-	    end
+    if type(raw) == "table" and raw.nMessageID and not seen(raw.nMessageID) then -- TODO
+	   	os.queueEvent(event.rednet_message, rch, raw.message, raw.sProtocol)
 	end
 
 	return true

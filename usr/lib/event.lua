@@ -53,14 +53,14 @@ autoload(event, "event",
          "Handler",
          "KeyedEvent")
 
-local handlers = event.KeyedEvent.new()
+local hl = event.KeyedEvent.new()
 
 function event.listen(ev, callback, ...)
-	return handlers:listen(ev, callback, ...)
+	return hl:listen(ev, callback, ...)
 end
 
 function event.ignore(ev, callback)
-	handlers:ignore(ev, callback)
+	hl:ignore(ev, callback)
 end
 
 local idlePending = false
@@ -71,7 +71,7 @@ function event.pull(filter, timeout_id)
 	depth = depth + 1
 	while true do
 
-        if not idlePending and handlers:handlers(event.idle) > 0 and depth == 1 then
+        if not idlePending and hl:handlers(event.idle) > 0 and depth == 1 then
             os.queueEvent(event.idle)
             idlePending = true
         end
@@ -100,7 +100,7 @@ function event.pull(filter, timeout_id)
             idlePending = false
         end
 
-        handlers:fire(unpack(ev))
+        hl:fire(unpack(ev))
 
         if not filter or filter == ev[1] then
         	break

@@ -3,14 +3,13 @@ local oo = require("oo")
 
 local Handler = oo.class("event.Handler")
 
-function Handler.new(handler, event, args, self, klass)
+function Handler.new(handler, args, self, klass)
 	if not handler then
 		error("handler missing", 2)
 	end
     self = self or {}
     Handler.super.new(self, klass or Handler)
     self._handler = handler
-    self._event   = event
     self._args    = args
     return self
 end
@@ -29,10 +28,6 @@ function Handler.fire(self, ...)
 	else
 		return self._handler(...)
 	end
-end
-
-function Handler.event(self)
-	return self._event
 end
 
 return Handler

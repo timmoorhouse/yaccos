@@ -1,7 +1,8 @@
 
-local oo  = require("oo")
-local ui  = require("ui")
-local log = require("log")
+local oo    = require("oo")
+local ui    = require("ui")
+local log   = require("log")
+local event = require("event")
 
 local Button = oo.class("ui.Button", ui.Window)
 
@@ -9,6 +10,7 @@ function Button.new(parent, text, x, y, w, h, self, klass)
     self = self or {}
     Button.super.new(parent, x, y, w or (#text+2), h or 1, self, klass or Button)
     self:text(text or "")
+    self.clicked = event.Event.new()
     return self
 end
 
@@ -40,7 +42,7 @@ end
 
 function Button._activate(self)
     log.debug("Button._activate "..tostring(self._text))
-    -- TODO
+    self.clicked:fire()
 end
 
 function Button.onFocus(self, focus)

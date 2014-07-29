@@ -1,0 +1,35 @@
+-- -*- lua -*-
+
+local cl  = require("cl")
+local net = require("net")
+
+local args = {...}
+local opt = cl.Options.new({
+        p = {
+        	name = "protocol",
+        	arg  = "string",
+        	help = "Look for server using this protocol",
+    	},
+    })
+
+opt:set(args)
+
+if opt:get("help") then
+	print("Usage: host [option...] name...")
+    opt:usage()
+    return
+end
+
+function lookup(h)
+	print("lookup h="..tostring(h).." p="..tostring(opt:get("protocol")))
+	local r = { net.dns.lookup(opt:get("protocol"), h) }
+	print(textutils.serialize(r))
+end
+
+if #args > 0 then
+	for i,v in ipairs(args) do
+		lookup(v)
+	end
+else
+	lookup(nil)
+end

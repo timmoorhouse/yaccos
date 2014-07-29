@@ -1,8 +1,7 @@
 
 local oo    = require("oo")
 local types = require("types")
--- can't require event since we're used by event
-local Handler = require("event.Handler")
+local event = require("event")
 
 local Event = oo.class("event.Event")
 
@@ -14,10 +13,7 @@ function Event.new(self, klass)
 end
 
 function Event.listen(self, handler, ...)
-	if not ev then
-		error("event missing", 2)
-	end
-	local e = Handler.new(handler, ev, {...})
+	local e = event.Handler.new(handler, {...})
 	self._handlers:push_front(e)
 	return e
 end

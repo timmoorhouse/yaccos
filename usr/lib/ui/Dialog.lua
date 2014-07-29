@@ -1,6 +1,7 @@
 
 local oo = require("oo")
 local ui = require("ui")
+local log = require("log")
 
 
 -- TODO
@@ -14,8 +15,10 @@ function Dialog.new(parent, x, y, w, h, self, klass)
     ui.Label.new(self._grid, "some message", 1, 1)
     local ok = ui.Button.new(self._grid, "OK", 1, 2)
     --ok._y.fill = false
-    ui.Button.new(self._grid, "A", 2, 1)
-    ui.Button.new(self._grid, "B", 2, 2)
+    local a = ui.Button.new(self._grid, "A", 2, 1)
+    local b = ui.Button.new(self._grid, "B", 2, 2)
+    a.clicked:listen(function() log.debug("A CLICKED") end)
+    b.clicked:listen(function() log.debug("B CLICKED") end)
     self._grid:resize(w, h)
     return self
 end
